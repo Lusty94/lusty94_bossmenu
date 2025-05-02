@@ -18,7 +18,7 @@ Config = {}
 
 Config.CoreSettings = {
     Debug = {
-        Prints = true, -- sends debug prints to f8 console and txadmin server console
+        Prints = false, -- sends debug prints to f8 console and txadmin server console
         Zones = false, -- debug circle zones for menu locations
     },
     Target = { -- target type - support for qb-target and ox_target  

@@ -20,6 +20,8 @@ function SVNotify(src, msg, type, time, title)
     if not msg then print('Notification Sent With No Message') return end
     if NotifyType == 'qb' then
         TriggerClientEvent('QBCore:Notify', src, msg, type, time)
+    elseif NotifyType == 'qs' then
+        TriggerClientEvent('lusty94_bossmenu:client:notify', src, msg, type, time)
     elseif NotifyType == 'okok' then
         TriggerClientEvent('okokNotify:Alert', src, title, msg, time, type, Config.CoreSettings.Notify.Sound)
     elseif NotifyType == 'mythic' then
@@ -29,13 +31,14 @@ function SVNotify(src, msg, type, time, title)
     elseif NotifyType == 'custom' then
         -- Insert your own notify function here
     else
-        print('^1| Lusty945_BossMenu | DEBUG | ERROR | Unknown notify type set in Config.CoreSettings.Notify.Type! ' .. NotifyType)
+        print('^1| Lusty94_BossMenu | DEBUG | ERROR | Unknown notify type set in Config.CoreSettings.Notify.Type! ' ..tostring(NotifyType))
     end
 end
 
 
 --remove cash
 function removeCash(src, amount)
+    SVDebug('^1| Lusty94_BossMenu | DEBUG | INFO | Removing: '..amount..' in cash from server ID: '..src..'^7')
     if InvType == 'qb' then
         local Player = QBCore.Functions.GetPlayer(src)
         if Player.Functions.RemoveMoney('cash', amount) then
@@ -54,7 +57,7 @@ function removeCash(src, amount)
         -- Insert your custom logic for removing money (or cash item) here
         return true
     else
-        debug('| DEBUG | ERROR | Unknown inventory type set in Config.CoreSettings.Inventory.Type! '..InvType)
+        print('^1| Lusty94_BossMenu | DEBUG | ERROR | Unknown inventory type set in Config.CoreSettings.Inventory.Type! '..tostring(InvType))
         return false
     end
 end

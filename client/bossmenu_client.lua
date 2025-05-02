@@ -211,6 +211,7 @@ function SetBlips()
             AddTextComponentString(blipData.title or 'Job Management')
             EndTextCommandSetBlipName(blip)
             JobBlips[jobName] = blip
+            CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Adding management blips for job: '..jobName..' At coords: '.. json.encode(coords.coords.x, coords.coords.y, coords.coords.z)'^7')
         end
     end
 end
@@ -221,6 +222,7 @@ CreateThread(function()
     while not LocalPlayer.state.isLoggedIn do Wait(500) end
     PlayerJob = QBCore.Functions.GetPlayerData().job
     for jobName, coords in pairs(Config.Locations) do
+        CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Creating target zone for job: '..jobName..' At coords: '.. json.encode(coords.coords)'^7')
         if TargetType == 'qb' then
             exports['qb-target']:AddCircleZone('bossMenu_'..jobName, coords.coords, 1.5, {
                 name = 'bossMenu_'..jobName,
@@ -277,6 +279,7 @@ RegisterNetEvent('lusty94_bossmenu:client:ViewEmployees', function(data)
     local options = {}
     for _, member in pairs(members) do
         options[#options+1] = { title = member.name, description = 'Rank: '..member.grade.name..'\n Citizen ID: '..member.citizenid..'\n Phone number: '..member.phone  }
+        CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Employees information for job: '..jobName..' Name: '..member.name..' Rank: '..member.grade.name..' Citizen ID: '..member.citizenid..' Phone number: '..member.phone..'^7')
     end
     table.insert(options, {
         title = 'Return to main menu',
@@ -303,6 +306,7 @@ RegisterNetEvent('lusty94_bossmenu:client:HireEmployee', function(data)
     local playerChoices = {}
     for _, p in pairs(players) do
         playerChoices[#playerChoices+1] = { label = p.name..' | ID: '..p.source, value = p.source, playerName = p.name, }
+        CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Nearby players to hire for job: '..job..' Name: '..p.name..' Server ID: '..p.source..'^7')
     end
     local playerInput = lib.inputDialog('Hire Employee', {
         {
@@ -326,6 +330,7 @@ RegisterNetEvent('lusty94_bossmenu:client:HireEmployee', function(data)
     local gradeChoices = {}
     for grade, data in pairs(QBCore.Shared.Jobs[job].grades) do
         gradeChoices[#gradeChoices+1] = { label = data.name or ('Rank '..grade), value = tonumber(grade) }
+        CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Player selected to be hired for job: '..job..' Name: '..selectedName..' Rank: '..data.name..'^7')
     end
     table.sort(gradeChoices, function(a, b) return a.value < b.value end)
     local rankInput = lib.inputDialog('Select Rank', {
@@ -375,6 +380,7 @@ RegisterNetEvent('lusty94_bossmenu:client:PromoDemoEmployee', function(data)
     local gradeChoices = {}
     for grade, data in pairs(QBCore.Shared.Jobs[job].grades) do
         gradeChoices[#gradeChoices+1] = { label = data.name or ('Rank '..grade), value = tonumber(grade) }
+        CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Player selected to be promoted or demoted for job: '..job..' Name: '..selectedName..' Rank: '..data.name..'^7')
     end    
     table.sort(gradeChoices, function(a, b) return a.value < b.value end)
     local rankInput = lib.inputDialog('Select New Rank', {
@@ -417,6 +423,7 @@ RegisterNetEvent('lusty94_bossmenu:client:FireEmployee', function(data)
     if not input then setBusy(false) CLNotify(Config.Language.Notifications.Cancelled, 'error') return end
     local targetCitizenId = input[1]
     local selectedName = employees[1].playerName
+    CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Player selected to be fired from job: '..data.job..' Name: '..selectedName..' Citizen ID: '..targetCitizenId..'^7')
     local confirm = lib.alertDialog({
         header = 'Confirm Fire',
         content = 'Are you sure you want to fire '..selectedName..'?',
@@ -456,8 +463,10 @@ RegisterNetEvent('lusty94_bossmenu:client:RefreshEmployeeList', function(job)
     TriggerEvent('lusty94_bossmenu:client:ViewEmployees', { job = job })
 end)
 
+
 --deposit cash
 RegisterNetEvent('lusty94_bossmenu:client:DepositMoney', function(data)
+    if PlayerJob.name ~= data.job or not PlayerJob.isboss then CLNotify(Config.Language.Notifications.NoAccess, 'error') return end
     setBusy(true)
     local cash = lib.callback.await('lusty94_bossmenu:server:getPlayerCash', false)
     if cash <= 0 then setBusy(false) CLNotify(Config.Language.Notifications.NoCash, 'error') return end
@@ -478,6 +487,7 @@ RegisterNetEvent('lusty94_bossmenu:client:DepositMoney', function(data)
     })
     if not input then setBusy(false) CLNotify(Config.Language.Notifications.Cancelled, 'error') return end
     local amount = tonumber(input[2])
+    CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Player chose to deposit: '..amount..' to job: '..data.job..'^7')
     if amount and amount > 0 then
         setBusy(false)
         local coords = GetEntityCoords(PlayerPedId())
@@ -623,6 +633,12 @@ RegisterNetEvent('lusty94_bossmenu:client:ToggleDuty', function()
         TriggerServerEvent('QBCore:ToggleDuty')
     end
     CLNotify('Duty Status Toggled', 'success')
+end)
+
+
+
+RegisterNetEvent('lusty94_bossmenu:client:notify', function(msg, type, time)
+    CLNotify(msg, type, time)
 end)
 
 

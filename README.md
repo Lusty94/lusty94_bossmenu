@@ -49,6 +49,7 @@
 ## INSTALLATION
 
 - Ensure all dependencies are started before this script
+- Import or run the provided sql file in [SQL] folder to your database for the messaging system
 - Add / Remove jobs required in Config.Locations
 - Configure locations for each management menu zone
 - Define custom image urls for each job

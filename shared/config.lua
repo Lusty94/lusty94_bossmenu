@@ -18,7 +18,7 @@ Config = {}
 
 Config.CoreSettings = {
     Debug = {
-        Prints = false, -- sends debug prints to f8 console and txadmin server console
+        Prints = true, -- sends debug prints to f8 console and txadmin server console
         Zones = false, -- debug circle zones for menu locations
     },
     Target = { -- target type - support for qb-target and ox_target  
@@ -30,7 +30,7 @@ Config.CoreSettings = {
     },
     Notify = { -- notification type - support for qb-core notify okokNotify, mythic_notify, ox_lib notify and qs-notify (experimental not tested)
         --EDIT CLIENT/BOSSMENU_CLIENT.LUA & SERVER/BOSSMENU_SERVER.LUA TO ADD YOUR OWN NOTIFY SUPPORT
-        Type = 'qb',
+        Type = 'ox',
         --use 'qb' for default qb-core notify
         --use 'okok' for okokNotify
         --use 'mythic' for mythic_notify

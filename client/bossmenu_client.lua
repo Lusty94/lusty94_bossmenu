@@ -200,6 +200,7 @@ function SetBlips()
     JobBlips = {}
     for jobName, coords in pairs(Config.Locations) do
         local blipData = Config.Locations[jobName].blip
+        CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Adding management blips for job: '..jobName..' At coords: '.. json.encode(coords.coords)..'^7')
         if blipData and blipData.enabled and PlayerJob.name == jobName then
             local blip = AddBlipForCoord(coords.coords.x, coords.coords.y, coords.coords.z)
             SetBlipSprite(blip, blipData.id)
@@ -211,7 +212,6 @@ function SetBlips()
             AddTextComponentString(blipData.title or 'Job Management')
             EndTextCommandSetBlipName(blip)
             JobBlips[jobName] = blip
-            CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Adding management blips for job: '..jobName..' At coords: '.. json.encode(coords.coords.x, coords.coords.y, coords.coords.z)'^7')
         end
     end
 end
@@ -222,7 +222,7 @@ CreateThread(function()
     while not LocalPlayer.state.isLoggedIn do Wait(500) end
     PlayerJob = QBCore.Functions.GetPlayerData().job
     for jobName, coords in pairs(Config.Locations) do
-        CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Creating target zone for job: '..jobName..' At coords: '.. json.encode(coords.coords)'^7')
+        CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Creating target zone for job: '..jobName..' At coords: '..json.encode(coords.coords)..'^7')
         if TargetType == 'qb' then
             exports['qb-target']:AddCircleZone('bossMenu_'..jobName, coords.coords, 1.5, {
                 name = 'bossMenu_'..jobName,
@@ -330,8 +330,8 @@ RegisterNetEvent('lusty94_bossmenu:client:HireEmployee', function(data)
     local gradeChoices = {}
     for grade, data in pairs(QBCore.Shared.Jobs[job].grades) do
         gradeChoices[#gradeChoices+1] = { label = data.name or ('Rank '..grade), value = tonumber(grade) }
-        CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Player selected to be hired for job: '..job..' Name: '..selectedName..' Rank: '..data.name..'^7')
     end
+    CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Player selected to be hired for job: '..job..' Name: '..selectedName..'^7')
     table.sort(gradeChoices, function(a, b) return a.value < b.value end)
     local rankInput = lib.inputDialog('Select Rank', {
         {
@@ -460,6 +460,7 @@ end)
 
 --refresh employee list
 RegisterNetEvent('lusty94_bossmenu:client:RefreshEmployeeList', function(job)
+    Wait(1000)
     TriggerEvent('lusty94_bossmenu:client:ViewEmployees', { job = job })
 end)
 

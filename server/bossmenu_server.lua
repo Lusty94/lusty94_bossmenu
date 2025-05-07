@@ -298,7 +298,7 @@ RegisterNetEvent('lusty94_bossmenu:server:SendJobAnnouncement', function(jobName
     if not boss or boss.PlayerData.job.name ~= jobName or not boss.PlayerData.job.isboss then return end
     for _, player in pairs(QBCore.Functions.GetQBPlayers()) do
         if player.PlayerData.job.name == jobName then
-            SVNotify(player.PlayerData.source, message, 'info', 10000, 'Management Announcement')
+            SVNotify(player.PlayerData.source, message, 'success', 10000, 'Management Announcement')
         end
     end
 end)

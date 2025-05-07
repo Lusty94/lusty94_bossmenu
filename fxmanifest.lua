@@ -4,21 +4,21 @@ game 'gta5'
 
 author 'Lusty94'
 
-name 'lusty94_towing'
+name 'lusty94_bossmenu'
 
-description 'Towing Script For For QB Core'
+description 'Boss Menu Script For For QB Core'
 
 version '1.0.0'
 
 lua54 'yes'
 
 client_script {
-    'client/towing_client.lua',
+    'client/bossmenu_client.lua',
 }
 
 
 server_scripts { 
-    'server/towing_server.lua',
+    'server/bossmenu_server.lua',
     '@oxmysql/lib/MySQL.lua',
 }
 
@@ -33,7 +33,3 @@ escrow_ignore {
     'client/**.lua',
     'server/**.lua',
 }
-
-
---remove this if you are not using the ramps from bzzz
-data_file 'DLC_ITYP_REQUEST' 'stream/bzzz_ramps.ytyp'

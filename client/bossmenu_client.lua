@@ -1,8 +1,11 @@
 local QBCore = exports['qb-core']:GetCoreObject()
-local TargetType = Config.CoreSettings.Target.Type
-local NotifyType = Config.CoreSettings.Notify.Type
-local InvType = Config.CoreSettings.Inventory.Type
-local PlayerJob, SpawnedZones, JobBlips  = {}, {}, {}
+local TargetType = Config.CoreSettings.Target.Type or 'qb'
+local NotifyType = Config.CoreSettings.Notify.Type or 'qb'
+local InvType = Config.CoreSettings.Inventory.Type or 'qb'
+local CashSymbol = Config.CoreSettings.Banking.CashSymbol or '£'
+local PlayerJob = {}
+local SpawnedZones = {}
+local JobBlips  = {}
 local busy = false
 
 
@@ -16,31 +19,33 @@ end
 --sends a client notification
 function CLNotify(msg,type,time,title)
     if NotifyType == nil then print('^1| Lusty94_BossMenu | DEBUG | ERROR: NotifyType is nil!') return end
-    if not msg then print('Notification Sent With No Message!') return end
+    if not msg then msg = 'Notification sent with no message!' end
     if not type then type = 'success' end
     if not time then time = 5000 end
     if not title then title = 'Notification' end
     if NotifyType == 'qb' then
         QBCore.Functions.Notify(msg,type,time)
-    elseif NotifyType == 'qs' then
-        exports['qs-interface']:AddNotify(msg, title, time, 'fa-solid fa-clipboard')
     elseif NotifyType == 'okok' then
         exports['okokNotify']:Alert(title, msg, time, type, true)
     elseif NotifyType == 'mythic' then
         exports['mythic_notify']:DoHudText(type, msg)
     elseif NotifyType == 'ox' then
-        lib.notify({ title = title, description = msg, position = 'top', type = type, duration = time})
+        lib.notify({title = title, description = msg, position = 'top', type = type, duration = time})
+    elseif NotifyType == 'lation' then
+        exports.lation_ui:notify({title = title, message = msg, type = type, duration = time, icon = 'fa-solid fa-clipboard',})
+    elseif NotifyType == 'wasabi' then
+        exports.wasabi_notify:notify(title, msg, time, type)
     elseif NotifyType == 'custom' then
         --insert your custom notification function here
     else
-        print('^1| Lusty94_BossMenu | DEBUG | ERROR: Unknown Notify Type Set In Config.CoreSettings.Notify.Type!^7'..NotifyType)
+        print('^1| Lusty94_BossMenu | DEBUG | ERROR: Unknown Notify Type Set In Config.CoreSettings.Notify.Type | '..tostring(NotifyType))
     end
 end
 
 
 --get job logos
 function getJobLogo(jobName)
-    if not jobName then CLDebug('^1| Lusty94_BossMenu | DEBUG | ERROR: No jobName data received to obtain logo') return end
+    if not jobName then CLDebug('^1| Lusty94_BossMenu | DEBUG | ERROR | No job data received to obtain logo') return end
     return Config.Locations[jobName].image or 'https://files.fivemerr.com/images/54e9ebe7-df76-480c-bbcb-05b1559e2317.png'
 end
 
@@ -62,7 +67,7 @@ end
 --set busy status
 function setBusy(toggle)
     busy = toggle
-    CLDebug('^3| Lusty94_BossMenu | DEBUG | Info: Toggling Busy Status ^7')
+    CLDebug(('^3| Lusty94_BossMenu | DEBUG | Info | Busy Status | %s'):format(tostring(busy)))
 end
 
 
@@ -75,7 +80,7 @@ function OpenBossMenu(jobName)
     local jobBank = PlayerJob.isboss and lib.callback.await('lusty94_bossmenu:server:getJobBank', false, jobName) or nil
     local options = {}
     local desc = string.format('Total Employees: %s', members and #members or 0)
-    if jobBank then desc = desc..string.format('\nCurrent Bank Balance: $%s', jobBank) end
+    if jobBank then desc = desc..string.format('\nCurrent Bank Balance: %s%s', CashSymbol, jobBank) end
     options[#options+1] = {
         title = 'Job Title: '..jobLabel,
         description = desc,
@@ -133,6 +138,12 @@ function OpenBossMenu(jobName)
         options[#options+1] = {
             title = 'Deposit Cash',
             event = 'lusty94_bossmenu:client:DepositMoney',
+            icon = 'fa-solid fa-money-bill',
+            args = { job = jobName },
+        }
+        options[#options+1] = {
+            title = 'Give an Employee Bonus',
+            event = 'lusty94_bossmenu:client:GiveBonus',
             icon = 'fa-solid fa-money-bill',
             args = { job = jobName },
         }
@@ -196,11 +207,12 @@ end
 
 --refresh blips
 function SetBlips()
+    while not LocalPlayer.state.isLoggedIn do Wait(500) end
     for jobName, blip in pairs(JobBlips) do if blip then RemoveBlip(blip) end end
     JobBlips = {}
     for jobName, coords in pairs(Config.Locations) do
         local blipData = Config.Locations[jobName].blip
-        CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Adding management blips for job: '..jobName..' At coords: '.. json.encode(coords.coords)..'^7')
+        CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Adding management blips for job: '..jobName..' At coords: '.. json.encode(coords.coords))
         if blipData and blipData.enabled and PlayerJob.name == jobName then
             local blip = AddBlipForCoord(coords.coords.x, coords.coords.y, coords.coords.z)
             SetBlipSprite(blip, blipData.id)
@@ -222,11 +234,12 @@ CreateThread(function()
     while not LocalPlayer.state.isLoggedIn do Wait(500) end
     PlayerJob = QBCore.Functions.GetPlayerData().job
     for jobName, coords in pairs(Config.Locations) do
-        CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Creating target zone for job: '..jobName..' At coords: '..json.encode(coords.coords)..'^7')
+        CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Creating target zone for job: '..jobName..' At coords: '..json.encode(coords.coords))
         if TargetType == 'qb' then
-            exports['qb-target']:AddCircleZone('bossMenu_'..jobName, coords.coords, 1.5, {
+            exports['qb-target']:AddCircleZone('bossMenu_'..jobName, coords.coords, coords.radius or 1.0, {
                 name = 'bossMenu_'..jobName,
-                debugPoly = Config.CoreSettings.Debug.Zones,
+                debugPoly = coords.debug or false,
+                useZ = true,
             }, {
                 options = {
                     {
@@ -240,14 +253,14 @@ CreateThread(function()
                         end,
                     }
                 },
-                distance = 2.0
+                distance = coords.distance or 2.0
             })
             SpawnedZones[#SpawnedZones + 1] = { type = 'qb', name = 'bossMenu_'..jobName }
         elseif TargetType == 'ox' then
             local zoneId = exports.ox_target:addSphereZone({
                 coords = coords.coords,
-                radius = 1.5,
-                debug = Config.CoreSettings.Debug.Zones,
+                radius = coords.radius or 1.0,
+                debug = coords.debug or false,
                 options = {
                     {
                         icon = 'fas fa-clipboard',
@@ -256,10 +269,9 @@ CreateThread(function()
                             return not busy
                         end,
                         onSelect = function()
-                            if busy then CLNotify(Config.Language.Notifications.Busy, 'error') return end
                             OpenBossMenu(jobName)
                         end,
-                        distance = 2.0,
+                        distance = coords.distance or 2.0,
                     }
                 }
             })
@@ -490,9 +502,48 @@ RegisterNetEvent('lusty94_bossmenu:client:DepositMoney', function(data)
     local amount = tonumber(input[2])
     CLDebug('^3| Lusty94_BossMenu | DEBUG | INFO | Player chose to deposit: '..amount..' to job: '..data.job..'^7')
     if amount and amount > 0 then
-        setBusy(false)
         local coords = GetEntityCoords(PlayerPedId())
         TriggerServerEvent('lusty94_bossmenu:server:DepositMoney', data.job, amount, coords)
+        setBusy(false)
+    end
+    setBusy(false)
+end)
+
+
+--give employee bonus
+RegisterNetEvent('lusty94_bossmenu:client:GiveBonus', function(data)
+    if PlayerJob.name ~= data.job or not PlayerJob.isboss then CLNotify(Config.Language.Notifications.NoAccess, 'error') return end
+    setBusy(true)
+    local cash = lib.callback.await('lusty94_bossmenu:server:getJobBank', false, data.job)
+    if cash <= 0 then setBusy(false) CLNotify(Config.Language.Notifications.NoCash, 'error') return end
+    local input = lib.inputDialog('Give Employee Bonus', {
+        {
+            type = 'input',
+            placeholder = 'Society Funds Available: \n'..CashSymbol..math.floor(cash),
+            disabled = true,
+        },
+        {
+            type = 'input',
+            label = 'Who gets the bonus?',
+            placeholder = 'Server ID of Employee',
+            required = true,
+        },
+        {
+            type = 'number',
+            label = 'How much to give?',
+            min = 1,
+            max = cash,
+            default = 1,
+            required = true,
+        },
+    })
+    if not input then setBusy(false) CLNotify(Config.Language.Notifications.Cancelled, 'error') return end
+    local amount = tonumber(input[3])
+    local who = tonumber(input[2])
+    if amount and amount > 0 then
+        local coords = GetEntityCoords(PlayerPedId())
+        TriggerServerEvent('lusty94_bossmenu:server:GiveBonus', data.job, amount, who, coords)
+        setBusy(false)
     end
     setBusy(false)
 end)
@@ -508,6 +559,10 @@ RegisterNetEvent('lusty94_bossmenu:client:OpenBossStash', function(jobName)
         TriggerServerEvent('lusty94_bossmenu:server:OpenBossStash',jobName, stashID, stashData, coords)
     elseif InvType == 'ox' then
         exports.ox_inventory:openInventory('stash', stashID)
+    elseif InvType == 'custom' then
+        --insert your own logic for adding items here
+    else
+        print('^1| Lusty94_BossMenu | DEBUG | ERROR | Unknown inventory type set in Config.CoreSettings.Inventory.Type | '..tostring(InvType))
     end
 end)
 
@@ -637,9 +692,15 @@ RegisterNetEvent('lusty94_bossmenu:client:ToggleDuty', function()
 end)
 
 
-
+--cl notify
 RegisterNetEvent('lusty94_bossmenu:client:notify', function(msg, type, time)
     CLNotify(msg, type, time)
+end)
+
+
+--reset flags
+RegisterNetEvent('lusty94_bossmenu:client:toggleStatus', function()
+    setBusy(false)
 end)
 
 

@@ -3,9 +3,11 @@
 
 ## Script Support
 
-- Script support is via Discord tickets for ``PAID`` resources ONLY: https://discord.gg/BJGFrThmA8
-- Any tickets created for ``free`` scripts will be ``immediately closed``
-- For ``free`` script support please use the ``gated channels``
+📌 **Important:**  
+- **Support** is provided **via Discord tickets** for **PAID** resources **ONLY**: [Join the Discord](https://discord.gg/BJGFrThmA8)  
+- ❌ **Any tickets created for free scripts will be immediately closed.**  
+- 💬 **For free script support**, please use the **gated channels** in Discord.  
+- **Extensive documentation** for this script can be found [here](https://lusty94-scripts.gitbook.io/documentation/free/boss-menu)
 
 
 
@@ -17,6 +19,7 @@
 - 🏷️ Automatically displays employee job labels and rank names across all menus and confirmations.
 - 📨 Integrated Messaging System allowing employees to send direct messages to their boss with optional boss replies.
 
+
 ``🛠️ Full Boss Menu with modular access control``
 - View all employees with online status and job rank
 - Hire new employees from nearby players
@@ -25,6 +28,7 @@
 - Read and reply to incoming employee messages
 - Deposit funds into the job bank account
 - Access job stash storage if enabled (stashes are configurable with weight and slot limits per job)
+
 
 ``👨‍🔧 Employee Utilities (non boss grade employees)``
 - Send messages to their boss
@@ -50,8 +54,25 @@
 
 - Ensure all dependencies are started before this script
 - Import or run the provided sql file in [SQL] folder to your database for the messaging system
-- Add / Remove jobs required in Config.Locations
+- Add or remove jobs required in Config.Locations
 - Configure locations for each management menu zone
 - Define custom image urls for each job
 - Configure the blips for each job
 - Configure the job boss stash information
+
+
+
+## CHANGELOGS
+
+``Version 1.0.1``
++ Added support for wasabi banking, tgg banking and fd banking
++ Added support for wasabi notify and lation UI notify
++ Added debug variable to each target zone instead of a global option
++ Added distance number to each target zone instead of a global distance
++ Added radius number to each target zone instead of a global size
++ Added the option to give an employee a cash bonus (funds are taken from society account and the receiver must be near you)
++ Added logging
++ Couple other QOL tweaks
+
+``Version 1.0.0``
++ Initial release
